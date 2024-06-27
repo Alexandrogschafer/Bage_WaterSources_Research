@@ -10,4 +10,8 @@ Additionally, the project will conduct detailed mappings of land use and land co
 It is expected that by the end of the project, a robust database and analytical tools will be available, significantly contributing to the sustainable management of water resources. This will promote more efficient and responsible land use and environmental conservation practices within the coverage area of the Arvorezinha-Bagé-RS dam contribution basin.
 
 
+# Contributing
+Contributions are welcome! Please read the contribution guidelines first.
 
+# License
+This project is licensed under the MIT License - see the LICENSE file for details.
