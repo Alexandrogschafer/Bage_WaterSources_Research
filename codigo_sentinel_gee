@@ -1,0 +1,49 @@
+// Definir a área de estudo com as coordenadas fornecidas
+var areaDeEstudo = ee.Geometry.Rectangle({
+  coords: [-54.20528, -31.30611, -54.03917, -31.18333],
+  geodesic: false
+});
+
+// Definir o intervalo de tempo
+var dataInicio = '2023-01-01';
+var dataFim = '2023-12-31';
+
+// Filtrar a coleção de imagens Sentinel-2 L2A harmonizada com menos de 5% de nuvens e ordenar por data
+var colecao = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
+  .filterBounds(areaDeEstudo)
+  .filterDate(dataInicio, dataFim)
+  .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 1))
+  .sort('system:time_start');
+
+// Contar o número de imagens na coleção
+print('Número de imagens encontradas:', colecao.size());
+
+// Função para exportar cada banda separadamente
+var exportarBandasSeparadas = function(imagem) {
+  var data = ee.Date(imagem.get('system:time_start')).format('YYYY-MM-dd').getInfo();
+  var bandas = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B11', 'B12'];
+
+  bandas.forEach(function(banda) {
+    var bandaImagem = imagem.select(banda).toUint16();
+
+    // Exportar a banda para o Google Drive
+    Export.image.toDrive({
+      image: bandaImagem.clip(areaDeEstudo),
+      description: 'Sentinel2_L2A_Harmonizado_Export_' + data + '_' + banda,
+      folder: 'GEE_Folder',
+      scale: 10,  // Resolução espacial em metros
+      region: areaDeEstudo,
+      fileFormat: 'GeoTIFF',
+      maxPixels: 1e13  // Limite máximo de pixels
+    });
+  });
+};
+
+// Aplicar a função de exportação a cada imagem na coleção
+colecao.evaluate(function(listaDeImagens) {
+  listaDeImagens.features.forEach(function(imagemFeature) {
+    var imagem = ee.Image(imagemFeature.id);
+    exportarBandasSeparadas(imagem);
+  });
+});
+
